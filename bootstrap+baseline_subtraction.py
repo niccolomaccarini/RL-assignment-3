@@ -111,10 +111,11 @@ def get_q_estimates(rewards, model, gamma, N, states, standardize = False):
 
     return q_estimates
 
-def compute_loss(action_probs: tf.Tensor,  values: tf.Tensor, q_estimates : tf.Tensor):
-    #advantage = returns - values
+def compute_loss(action_probs, values, q_estimates):
+    advantage = q_estimates - values
     action_log_probs = tf.math.log(action_probs)
-    actor_loss = -tf.math.reduce_sum(action_log_probs * q_estimates)
+    actor_loss = -tf.math.reduce_sum(advantage * action_log_probs)
+
     critic_loss = tf.math.reduce_sum((q_estimates - values)**2)
 
     return actor_loss + critic_loss
