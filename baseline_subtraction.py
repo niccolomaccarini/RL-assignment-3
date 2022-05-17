@@ -154,27 +154,22 @@ batch_update_size = 16
 # Discount factor for future rewards
 gamma = 0.99
 
-def cartpole(learning_rate, batch_update_size, gamma):
+def cartpole(learning_rate, batch_update_size, gamma, n_episodes):
     
-    min_episodes_criterion = 100
-    max_episodes = 10000
     max_steps_per_episode = 2000 # This is possibly useless, cartpole's standard is 500
 
     #Build the model
     network = build_model()
 
-    # Cartpole is considered solved if average reward is >= 300 over 100 
-    # consecutive trials
-    reward_threshold = 250
     running_reward = 0
 
     # Choose optimizer
     optimizer = tf.keras.optimizers.Adam(learning_rate)
 
     # Keep last episodes reward
-    episodes_reward: collections.deque = collections.deque(maxlen=min_episodes_criterion)
+    episodes_reward: collections.deque = collections.deque(maxlen=n_episodes)
 
-    with tqdm.trange(max_episodes) as t:
+    with tqdm.trange(n_episodes) as t:
         for i in t:
             with tf.GradientTape() as tape:
                 # Define a common loss 
@@ -200,7 +195,6 @@ def cartpole(learning_rate, batch_update_size, gamma):
                         grads = tape.gradient(loss, network.trainable_variables)
                         optimizer.apply_gradients(zip(grads, network.trainable_variables))
                         loss = tf.constant(0.)
-                        del tape
 
                 # Show average episode reward every 10 episodes
                # if i % 10 == 0:
@@ -211,6 +205,5 @@ def cartpole(learning_rate, batch_update_size, gamma):
 
     #print(f'\nSolved at episode {i}: average reward: {running_reward:.2f}')
     
-    return episode_reward
+    return episodes_reward
     
-cartpole(learning_rate, batch_update_size, gamma)
